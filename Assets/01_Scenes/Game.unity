@@ -233,9 +233,9 @@ MonoBehaviour:
   gamePanel: {fileID: 1512367052}
   eventSystem: {fileID: 603233983}
   playButton: {fileID: 1737042418}
-  leaveButton: {fileID: 0}
-  statusText: {fileID: 0}
-  phaseMessageText: {fileID: 0}
+  leaveButton: {fileID: 228432291}
+  statusText: {fileID: 1385177130}
+  phaseMessageText: {fileID: 2083852741}
 --- !u!1 &65940613
 GameObject:
   m_ObjectHideFlags: 0
