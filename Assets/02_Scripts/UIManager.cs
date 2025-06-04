@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -11,12 +12,11 @@ namespace CuteDuckGame
     {
         [Header("UI 컴포넌트")]
         [SerializeField] private EventSystem eventSystem;
-        [SerializeField] private GameObject playButton;
-        [SerializeField] private GameObject leaveButton;
+        [SerializeField] private Button playButton;
+        [SerializeField] private Button leaveButton;
         
         [Header("상태 표시 UI")]
         [SerializeField] private TextMeshProUGUI statusText;
-        [SerializeField] private Button playButtonComponent;
         
         [Header("Unity Events")]
         [SerializeField] private UnityEvent OnPlayButtonPressed;
@@ -27,21 +27,13 @@ namespace CuteDuckGame
         public static UIManager Instance;
         
         // Action 이벤트
-        public static System.Action OnGameStartRequested;
-        public static System.Action OnGameLeaveRequested;
+        public static Action OnGameStartRequested;
+        public static Action OnGameLeaveRequested;
 
         private void Awake()
         {
             // 싱글톤 초기화
             Instance = this;
-
-            // 씬이 로드될 때마다 이벤트를 받아서 OnSceneLoaded를 호출하도록 연결
-            SceneManager.sceneLoaded += OnSceneLoaded;
-            
-            // AR 위치 유효성 변화 이벤트 구독
-            RaycastWithTrackableTypes.OnARPositionValidityChanged += OnARValidityChanged;
-            
-            InitializeComponents();
         }
         
         private void Start()
@@ -54,43 +46,29 @@ namespace CuteDuckGame
             UpdateARStatus();
         }
         
-        /// <summary>
-        /// 컴포넌트 초기화
-        /// </summary>
-        private void InitializeComponents()
-        {
-            // 플레이 버튼 컴포넌트 자동 찾기
-            if (playButtonComponent == null && playButton != null)
-                playButtonComponent = playButton.GetComponent<Button>();
-        }
-        
-        /// <summary>
         /// 버튼 이벤트 설정
-        /// </summary>
         private void SetupButtonEvents()
         {
             // 플레이 버튼 이벤트 연결
-            if (playButtonComponent != null)
+            if (playButton != null)
             {
-                playButtonComponent.onClick.RemoveAllListeners();
-                playButtonComponent.onClick.AddListener(OnPlayButtonClicked);
+                playButton.onClick.RemoveAllListeners();
+                playButton.onClick.AddListener(OnPlayButtonClicked);
             }
         }
         
-        /// <summary>
         /// AR 상태 업데이트
-        /// </summary>
         private void UpdateARStatus()
         {
-            if (SceneManager.GetActiveScene().name.Contains("Title"))
+            if (SceneManager.GetActiveScene().name.Contains("Game"))
             {
                 // 타이틀 씬에서만 AR 상태 확인
                 bool hasValidPosition = StaticData.HasValidSpawnPos();
                 
                 // 플레이 버튼 활성화 상태 업데이트
-                if (playButtonComponent != null)
+                if (playButton != null)
                 {
-                    playButtonComponent.interactable = hasValidPosition;
+                    playButton.interactable = hasValidPosition;
                 }
                 
                 // 상태 텍스트 업데이트
@@ -104,47 +82,34 @@ namespace CuteDuckGame
             }
         }
         
-        /// <summary>
         /// AR 위치 유효성 변화 이벤트 핸들러
-        /// </summary>
         private void OnARValidityChanged(bool isValid)
         {
             OnARPositionValidityChanged?.Invoke(isValid);
             
-            if (playButtonComponent != null)
+            if (playButton != null)
             {
-                playButtonComponent.interactable = isValid;
+                playButton.interactable = isValid;
             }
             
             Debug.Log($"[UIManager] AR 위치 유효성 변경: {isValid}");
         }
-
-        /// <summary>
+        
         /// 씬이 로드될 때마다 호출되는 메서드.
         /// 씬 이름에 따라 버튼 활성화 여부를 다르게 설정한다.
-        /// </summary>
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            // Title 씬일 경우
-            if (scene.name.Contains("Title"))
-            {
-                TogglePlayButton(true);
-                ToggleLeaveButton(false);
-                return;
-            }
 
             // Game 씬일 경우 Leave 버튼 활성화
             if (scene.name.Contains("Game"))
             {
-                TogglePlayButton(false);
+                TogglePlayButton(true);
                 ToggleLeaveButton(true);
                 return;
             }
         }
         
-        /// <summary>
         /// 플레이 버튼 클릭 이벤트
-        /// </summary>
         public void OnPlayButtonClicked()
         {
             Debug.Log("[UIManager] 플레이 버튼 클릭됨");
@@ -197,9 +162,7 @@ namespace CuteDuckGame
             }
         }
         
-        /// <summary>
         /// 오류 메시지 표시
-        /// </summary>
         private void ShowErrorMessage(string message)
         {
             if (statusText != null)
@@ -212,9 +175,7 @@ namespace CuteDuckGame
             }
         }
         
-        /// <summary>
         /// 상태 텍스트 리셋
-        /// </summary>
         private void ResetStatusText()
         {
             if (statusText != null)
@@ -223,28 +184,22 @@ namespace CuteDuckGame
             }
         }
 
-        /// <summary>
         /// UI 인터랙션 활성/비활성 전환
-        /// </summary>
         public void ToggleInteraction(bool isOn)
         {
             eventSystem.enabled = isOn;
         }
 
-        /// <summary>
         /// Play 버튼 활성/비활성 전환
-        /// </summary>
         public void TogglePlayButton(bool isOn)
         {
-            playButton.SetActive(isOn);
+            playButton.gameObject.SetActive(isOn);
         }
-
-        /// <summary>
+        
         /// Leave 버튼 활성/비활성 전환
-        /// </summary>
         public void ToggleLeaveButton(bool isOn)
         {
-            leaveButton.SetActive(isOn);
+            leaveButton.gameObject.SetActive(isOn);
         }
         
         private void OnDestroy()

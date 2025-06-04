@@ -56,7 +56,7 @@ namespace CuteDuckGame
             isInTitleScene = sceneName.Contains("Title");
             Debug.Log($"[RaycastWithTrackableTypes] 현재 씬: {sceneName}, 타이틀 씬: {isInTitleScene}");
         }
-
+        
         private void DetectGround()
         {
             Vector2 screenPoint = new Vector2(Screen.width / 2, Screen.height / 2);
@@ -67,25 +67,18 @@ namespace CuteDuckGame
                 indicator.transform.position = hits[0].pose.position;
                 indicator.transform.rotation = hits[0].pose.rotation;
                 indicator.transform.position += indicator.transform.up * 0.1f;
-                
-                // 현재 위치 업데이트
+        
                 Vector3 newPosition = hits[0].pose.position;
                 if (Vector3.Distance(currentSelectedPosition, newPosition) > 0.1f)
                 {
                     currentSelectedPosition = newPosition;
-                    
-                    // 타이틀 씬에서만 StaticData에 저장
-                    if (isInTitleScene)
-                    {
-                        StaticData.SetInitialSpawnPos(currentSelectedPosition);
-                        
-                        // 이벤트 발생
-                        OnPositionSelected?.Invoke(currentSelectedPosition);
-                        OnARPositionChanged?.Invoke(currentSelectedPosition);
-                    }
+            
+                    // 항상 StaticData에 저장 (씬 체크 제거)
+                    StaticData.SetInitialSpawnPos(currentSelectedPosition);
+                    OnPositionSelected?.Invoke(currentSelectedPosition);
+                    OnARPositionChanged?.Invoke(currentSelectedPosition);
                 }
-                
-                // 유효한 위치 감지 이벤트
+        
                 if (!hasValidPosition)
                 {
                     hasValidPosition = true;
@@ -96,8 +89,7 @@ namespace CuteDuckGame
             else
             {
                 indicator.SetActive(false);
-                
-                // 유효한 위치 상실 이벤트
+        
                 if (hasValidPosition)
                 {
                     hasValidPosition = false;
