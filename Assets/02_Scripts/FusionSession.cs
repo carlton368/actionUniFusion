@@ -6,6 +6,8 @@ using Fusion;
 using Fusion.Sockets;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Cysharp.Threading.Tasks;
+
 
 namespace CuteDuckGame
 {
@@ -28,20 +30,21 @@ namespace CuteDuckGame
         }
 
         // 게임 시작 시 타이틀 씬부터 로드
-        private void Start()
+        private async void Start()
         {
+            // 3초 기다린 뒤 titleScene 로드
+            await UniTask.Delay(TimeSpan.FromSeconds(3f));
             SceneManager.LoadScene(titleScene);
         }
 
         // 세션에 접속 시도하는 메서드
         public void TryConnect()
         {
-            // StaticData.CurrentStageInfo.stageName을 세션 이름에 포함
-            StartCoroutine(ConnectSharedSessionRoutine($"{StaticData.CurrentRoomName}"));
+            ConnectSharedSessionRoutine($"{StaticData.CurrentRoomName}").Forget();
         }
 
         // 실질적으로 공유 세션에 접속을 시도하는 코루틴
-        private IEnumerator ConnectSharedSessionRoutine(string sessionCode)
+        public async UniTask ConnectSharedSessionRoutine(string sessionCode)
         {
             // UI의 상호작용을 잠시 비활성화
             UIManager.Instance.ToggleInteraction(false);
@@ -49,11 +52,12 @@ namespace CuteDuckGame
             // 기존의 Runner가 존재한다면 종료 후 갱신
             if (Runner)
                 Runner.Shutdown();
+            
             Runner = Instantiate(runnerPrefab);
             Runner.AddCallbacks(this);
 
             // 세션을 시작하는 비동기 작업
-            var task = Runner.StartGame(
+            var startGameTask = Runner.StartGame(
                 new StartGameArgs
                 {
                     GameMode = GameMode.Shared,
@@ -62,14 +66,14 @@ namespace CuteDuckGame
                     ObjectProvider = Runner.GetComponent<INetworkObjectProvider>(),
                     Scene = SceneRef.FromIndex(SceneUtility.GetBuildIndexByScenePath(gameScene))
                 });
-            // 세션 시작 작업이 완료될 때까지 대기
-            yield return new WaitUntil(() => task.IsCompleted);
-
+            // 비동기 작업이 완료될 때까지 대기 (task.IsCompleted를 검사하거나 AsUniTask 사용)
+            await UniTask.WaitUntil(() => startGameTask.IsCompleted);
+            
             // 작업 완료 후 UI 다시 활성화
             UIManager.Instance.ToggleInteraction(true);
 
             // 결과 확인 및 로그 출력
-            var result = task.Result;
+            var result = startGameTask.Result;
             Debug.Log($"StartGame Result: {result.ShutdownReason}");
             if (!result.Ok)
             {

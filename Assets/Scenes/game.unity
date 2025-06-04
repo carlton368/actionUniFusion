@@ -266,7 +266,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!81 &330585544
 AudioListener:
   m_ObjectHideFlags: 0
@@ -558,7 +558,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &459717806
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -641,6 +641,15 @@ MonoBehaviour:
   stage: {fileID: 9161196140074125947, guid: 427ac18e48f5f44c19969874b1a0120e, type: 3}
   raycastManager: {fileID: 0}
   placedObject: {fileID: 0}
+  OnPositionSelected:
+    m_PersistentCalls:
+      m_Calls: []
+  OnValidPositionDetected:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPositionLost:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &486192623
 GameObject:
   m_ObjectHideFlags: 0
@@ -1624,10 +1633,17 @@ MonoBehaviour:
   duckSpawnCycle: 5
   maxDucksAtOnce: 10
   duckPrefab: {fileID: 8563356403336790171, guid: b0944abbb8436472081f18b24d3dcebb, type: 3}
-  spawnCenter: {x: 0, y: 0, z: 0}
+  spawnCenterOffset: {x: 0, y: 0, z: 0}
   spawnRadius: 2
+  useARPosition: 1
   timerText: {fileID: 1653865234}
   playerCountText: {fileID: 1702509684}
+  OnDuckSpawnCycleComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  OnTimerUpdated:
+    m_PersistentCalls:
+      m_Calls: []
   _ServerTimer: 0
   _ConnectedPlayers: 0
   _ShouldSpawnDucks: 0
@@ -1800,7 +1816,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1730924833
 MonoBehaviour:
   m_ObjectHideFlags: 0

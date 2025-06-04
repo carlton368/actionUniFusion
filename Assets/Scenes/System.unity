@@ -400,7 +400,7 @@ MonoBehaviour:
   playButton: {fileID: 990379278}
   leaveButton: {fileID: 925309106}
   statusText: {fileID: 1002871371}
-  playButtonComponent: {fileID: 990379280}
+  playButtonComponent: {fileID: 0}
   OnPlayButtonPressed:
     m_PersistentCalls:
       m_Calls: []
