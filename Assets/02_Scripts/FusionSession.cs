@@ -17,38 +17,38 @@ namespace CuteDuckGame
 
         // 현재 사용 중인 NetworkRunner 인스턴스 접근 프로퍼티
         public NetworkRunner Runner { get; private set; }
+        
+        // GameFlowController 참조 추가
+        private GameFlowController gameFlowController;
 
         // 게임 시작 시 자동 씬 로드 제거
         private void Start()
         {
-            Debug.Log("[FusionSession- Start()] 초기화 완료 - 단일 씬 모드");
-            
-            // TODO: 2단계에서 GameFlowController 연동 예정
-            // GameFlowController.Instance?.TransitionToPhase(GamePhase.ARScan);
+            Debug.Log("[FusionSession] 초기화 완료 - 단일 씬 모드");
+        
+            // GameFlowController 찾기
+            gameFlowController = FindObjectOfType<GameFlowController>();
+        
+            // AR 스캔 단계로 전환
+            if (gameFlowController != null)
+            {
+                gameFlowController.TransitionToPhase(GamePhase.ARScanning);
+            }
         }
-
-        // 세션에 접속 시도하는 메서드
-        public void TryConnect()
-        {
-            ConnectSharedSessionRoutine($"{StaticData.CurrentRoomName}").Forget();
-        }
-
-        // 실질적으로 공유 세션에 접속을 시도하는 코루틴
+        
+        // 실질적으로 공유 세션에 접속을 시도하는 비동기 작업
         public async UniTask ConnectSharedSessionRoutine(string sessionCode)
         {
             Debug.Log($"[FusionSession] 연결 시도: {sessionCode}");
-            
-            // UI의 상호작용을 잠시 비활성화
+        
             UIManager.Instance.ToggleInteraction(false);
 
-            // 기존의 Runner가 존재한다면 종료 후 갱신
             if (Runner)
                 Runner.Shutdown();
-            
+        
             Runner = Instantiate(runnerPrefab);
             Runner.AddCallbacks(this);
 
-            // 세션을 시작하는 비동기 작업
             var startGameTask = Runner.StartGame(
                 new StartGameArgs
                 {
@@ -57,29 +57,28 @@ namespace CuteDuckGame
                     SceneManager = Runner.GetComponent<INetworkSceneManager>(),
                     ObjectProvider = Runner.GetComponent<INetworkObjectProvider>()
                 });
-            
-            // 비동기 작업이 완료될 때까지 대기
+        
             await UniTask.WaitUntil(() => startGameTask.IsCompleted);
-            
-            // 작업 완료 후 UI 다시 활성화
             UIManager.Instance.ToggleInteraction(true);
 
-            // 결과 확인 및 로그 출력
             var result = startGameTask.Result;
-            Debug.Log($"[FusionSession] 연결 결과: {result.ShutdownReason}");
-            
+        
             if (result.Ok)
             {
                 Debug.Log("[FusionSession] 네트워크 연결 성공!");
-                // TODO: 2단계에서 GameFlowController 연동
-                // GameFlowController.Instance?.OnConnectionSuccess();
+                gameFlowController?.OnNetworkConnected();
             }
             else
             {
                 Debug.LogWarning($"[FusionSession] 연결 실패: {result.ShutdownReason}");
-                // TODO: 2단계에서 GameFlowController 연동
-                // GameFlowController.Instance?.OnConnectionFailed();
+                gameFlowController?.OnNetworkDisconnected();
             }
+        }
+
+        // 세션에 접속 시도하는 메서드
+        public void TryConnect()
+        {
+            ConnectSharedSessionRoutine($"{StaticData.CurrentRoomName}").Forget();
         }
 
         // 세션 연결 해제 시도
@@ -97,19 +96,10 @@ namespace CuteDuckGame
         {
             Runner = null;
             Debug.Log($"[FusionSession] 세션 종료: {shutdownReason}");
-            
-            // 씬 전환 대신 상태 변경만
+        
             if (shutdownReason == ShutdownReason.Ok)
             {
-                Debug.Log("[FusionSession] 정상 종료 - 타이틀로 복귀");
-                // TODO: 2단계에서 GameFlowController 연동
-                // GameFlowController.Instance?.TransitionToPhase(GamePhase.Title);
-            }
-            else
-            {
-                Debug.LogWarning($"[FusionSession] 비정상 종료: {shutdownReason}");
-                // TODO: 2단계에서 에러 처리
-                // GameFlowController.Instance?.OnConnectionError(shutdownReason);
+                gameFlowController?.OnNetworkDisconnected();
             }
         }
 
