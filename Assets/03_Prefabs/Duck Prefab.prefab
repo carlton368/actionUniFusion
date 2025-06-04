@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 882720887044788320}
   - component: {fileID: 6898080940431299166}
   m_Layer: 6
-  m_Name: Monster - Duck
+  m_Name: Duck Prefab
   m_TagString: Object
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
